@@ -20,12 +20,24 @@ const MyTrip = () => {
 
     const getMyTrips = async () => {
         setLoading(true)
+        setUserTrips([]) // Clear existing trips to prevent duplicates
+
         const q = query(collection(db, "UserTrips"), where("userEmail", "==", user?.email));
         const querySnapshot = await getDocs(q);
+
+        const trips: DocumentData[] = []
         querySnapshot.forEach((doc) => {
-            // console.log(doc.id, " => ", doc.data());
-            setUserTrips(prev=>[...prev,doc.data()])
+            trips.push(doc.data())
         });
+
+        // Sort trips by docId (timestamp) in descending order - latest first
+        const sortedTrips = trips.sort((a, b) => parseInt(b.docId) - parseInt(a.docId))
+        console.log('📅 Sorted trips:', sortedTrips.map(trip => ({
+            location: trip.tripData?.locationInfo?.name,
+            docId: trip.docId
+        })))
+
+        setUserTrips(sortedTrips)
         setLoading(false)
     }
     return (

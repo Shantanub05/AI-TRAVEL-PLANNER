@@ -1,12 +1,20 @@
 import { Colors } from '@/constants/Colors'
 import moment from 'moment'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useRouter } from 'expo-router'
 
-const UserTripCard = (
-    { userTrip }: any
-) => {
-return (
-    <View style={styles.container}>
+const UserTripCard = ({ userTrip }: any) => {
+    const router = useRouter()
+
+    const onTripPress = () => {
+        router.push({
+            pathname: '/trip-details',
+            params: { trips: encodeURIComponent(JSON.stringify(userTrip)) }
+        })
+    }
+
+    return (
+        <TouchableOpacity style={styles.container} onPress={onTripPress}>
         {userTrip.tripData.locationInfo.photoRef
                             ? (
                                 (() => {
@@ -27,7 +35,7 @@ return (
             <Text style={styles.date}>{moment(userTrip?.tripData.startDate).format('DD MMM yyyy')}</Text>
             <Text style={styles.count}>Traveling: {userTrip.tripData.travelerCount.title}</Text>
         </View>
-        </View>
+        </TouchableOpacity>
     )
 }
 export default UserTripCard

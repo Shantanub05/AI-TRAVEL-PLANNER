@@ -1,9 +1,12 @@
 import FlightInfo from '@/components/TripDetails/FlightInfo';
+import HotelList from '@/components/TripDetails/HotelList';
+import AttractionsList from '@/components/TripDetails/AttractionsList';
+import ItineraryPlan from '@/components/TripDetails/ItineraryPlan';
 import { Colors } from '@/constants/Colors'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
 import moment from 'moment';
 import { useEffect } from 'react'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, View, ScrollView } from 'react-native'
 
 const TripDetails = () => {
     const navigation = useNavigation();
@@ -32,7 +35,7 @@ const TripDetails = () => {
     }, []);
 
     return (
-        <View>
+        <ScrollView style={styles.mainContainer}>
             {tripObj?.tripData?.locationInfo?.photoRef ? (
                 (() => {
                     const photoUrl =
@@ -46,6 +49,7 @@ const TripDetails = () => {
             ) : (
                 <Image source={require('@/assets/images/login.png')} style={styles.image} />
             )}
+
             <View style={styles.container}>
                 <Text style={styles.name}>{tripObj.tripData.locationInfo.name}</Text>
                 <View style={styles.dateContainer}>
@@ -54,20 +58,36 @@ const TripDetails = () => {
                     <Text style={styles.date}>{moment(tripObj?.tripData.endDate).format('DD MMM yyyy')}</Text>
                 </View>
                 <Text style={styles.count}>🚌 {tripObj.tripData.travelerCount.title}</Text>
-                <FlightInfo flightData={tripObj.tripPlan.travel_plan.flights} />
-            </View>
-            {/* Flight Info */}
-            
-            {/* Hotel List */}
 
-            {/* Trip Day Planner */}
-        </View>
+                {/* Flight Information */}
+                <FlightInfo flightData={tripObj.tripPlan.travel_plan.flights} />
+
+                {/* Hotel List */}
+                <HotelList
+                    hotelData={tripObj.tripPlan.travel_plan.hotels}
+                    locationInfo={tripObj.tripData.locationInfo}
+                />
+
+                {/* Attractions List */}
+                <AttractionsList
+                    attractionsData={tripObj.tripPlan.travel_plan.attractions}
+                    locationInfo={tripObj.tripData.locationInfo}
+                />
+
+                {/* Daily Itinerary */}
+                <ItineraryPlan itineraryData={tripObj.tripPlan.travel_plan.itinerary} />
+            </View>
+        </ScrollView>
     );
 };
 
 export default TripDetails;
 
 const styles = StyleSheet.create({
+    mainContainer: {
+        flex: 1,
+        backgroundColor: Colors.white,
+    },
     image: {
         width: "100%",
         height: 330,

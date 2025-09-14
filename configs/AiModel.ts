@@ -5,6 +5,7 @@ const {
 } = require("@google/generative-ai");
 
 const apiKey = process.env.EXPO_PUBLIC_GOOGLE_GEMINI_API_KEY;
+console.log('🔑 Gemini API Key loaded:', apiKey ? '✅ Present' : '❌ Missing');
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({

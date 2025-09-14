@@ -76,13 +76,13 @@ The plan should include the following details:
     Hotel Options (Provide a list of hotels):
         - Hotel Name and Address
         - Price per night
-        - Hotel image URL
+        - Photo reference (Google Places photo_reference for the hotel, if available)
         - Geo-coordinates (latitude and longitude)
         - Rating and a brief description
 
     Nearby Attractions (Provide a list of places to visit):
         - Place Name and detailed description
-        - Place image URL
+        - Photo reference (Google Places photo_reference for the attraction, if available)
         - Geo-coordinates (latitude and longitude)
         - Ticket pricing information
         - Recommended best time to visit each attraction

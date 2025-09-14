@@ -12,7 +12,7 @@ import {
 
 } from 'firebase/auth';
 import { auth, provider } from '@/configs/FirebaseConfig';
-import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { AuthProvider, useAuth } from '@/configs/AuthContext';
 
 
@@ -59,24 +59,37 @@ const SignIn = () => {
 
     // Unified Google sign-in function:
     const signInWithGoogle = async () => {
-        if (Platform.OS === 'web') {
-            // On web, use pop-up
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    if (result) {
-                        const credential = GoogleAuthProvider.credentialFromResult(result);
-                        const token = credential?.accessToken;
-                        const user = result.user;
-                        // console.log("Google sign in successful (popup)", user);
-                    } else {
-                        console.error("No result returned from signInWithPopup");
-                    }
-                })
-                .catch((error) => {
-                    console.error("Google sign in error (popup)", error);
-                });
-        } else {
-            await googleSignIn();
+        try {
+            if (Platform.OS === 'web') {
+                // On web, use pop-up
+                const result = await signInWithPopup(auth, provider);
+                if (result) {
+                    router.replace('/MyTrip');
+                    ToastAndroid.show('Google Sign-in successful!', ToastAndroid.BOTTOM);
+                } else {
+                    console.error("No result returned from signInWithPopup");
+                    ToastAndroid.show('Google Sign-in failed', ToastAndroid.BOTTOM);
+                }
+            } else {
+                // On mobile, use the context function
+                await googleSignIn();
+                router.replace('/MyTrip');
+                ToastAndroid.show('Google Sign-in successful!', ToastAndroid.BOTTOM);
+            }
+        } catch (error: any) {
+            console.error("Google sign in error:", error);
+
+            // Handle specific DEVELOPER_ERROR
+            if (error?.code === 'com.google.android.gms.common.api.ApiException' ||
+                error?.message?.includes('DEVELOPER_ERROR') ||
+                error?.toString?.()?.includes('DEVELOPER_ERROR')) {
+                ToastAndroid.show(
+                    'Google Sign-in configuration issue. Please use email/password sign-in or contact support.',
+                    ToastAndroid.LONG
+                );
+            } else {
+                ToastAndroid.show('Google Sign-in failed. Please try again.', ToastAndroid.BOTTOM);
+            }
         }
     };
     // const { signinWithGoogle, signout } = useFirebase();
@@ -103,14 +116,17 @@ const SignIn = () => {
                         <TouchableOpacity onPress={() => router.replace('/auth/sign-up')} style={styles.buttonLight}>
                             <Text style={styles.buttonTextLight}>Create Account</Text>
                         </TouchableOpacity>
-                        <GoogleSigninButton
-                            size={GoogleSigninButton.Size.Wide}
-                            color={GoogleSigninButton.Color.Dark}
-                            onPress={signInWithGoogle}
-                        />
-                        {/* <TouchableOpacity onPress={signInWithGoogle} style={styles.buttonLight}>
-                <Text style={styles.buttonTextLight}>Sign in with Google</Text>
-            </TouchableOpacity> */}
+                        <TouchableOpacity onPress={signInWithGoogle} style={styles.googleButton} activeOpacity={0.8}>
+                            <View style={styles.googleButtonContent}>
+                                <View style={styles.googleIconContainer}>
+                                    <View style={styles.googleIconBg}>
+                                        <Text style={styles.googleIcon}>G</Text>
+                                    </View>
+                                </View>
+                                <Text style={styles.googleButtonText}>Continue with Google</Text>
+                                <Ionicons name="arrow-forward" size={20} color="#5f6368" style={styles.arrowIcon} />
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>
             </ScrollView>
@@ -168,5 +184,55 @@ const styles = StyleSheet.create({
     },
     buttonTextLight: {
         textAlign: 'center',
+    },
+    googleButton: {
+        backgroundColor: Colors.white,
+        borderWidth: 1.5,
+        borderColor: '#e0e0e0',
+        borderRadius: 16,
+        padding: 18,
+        marginTop: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    googleButtonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    googleIconContainer: {
+        marginRight: 16,
+    },
+    googleIconBg: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#4285f4',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#4285f4",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    googleIcon: {
+        color: Colors.white,
+        fontSize: 18,
+        fontFamily: 'outfit-bold',
+        fontWeight: 'bold',
+    },
+    googleButtonText: {
+        color: '#2d3436',
+        fontSize: 16,
+        fontFamily: 'outfit-medium',
+        flex: 1,
+        textAlign: 'center',
+    },
+    arrowIcon: {
+        marginLeft: 16,
     },
 });

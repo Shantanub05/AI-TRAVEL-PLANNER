@@ -29,6 +29,15 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Environment variables (SECURITY)
+.env
+.env.*
+!.env.example
+
+# Firebase configuration (SECURITY)
+google-services.json
+GoogleService-Info.plist
+
 # local env files
 .env*.local
 

@@ -1,16 +1,17 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode, useMemo } from 'react';
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { onAuthStateChanged, signInWithCredential, GoogleAuthProvider, User, signOut as firebaseSignOut } from 'firebase/auth';
+import { auth } from './FirebaseConfig';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 // Initialize Google Sign In with the correct configuration
 GoogleSignin.configure({
-    webClientId: '1056489445891-p69mdlhgngprardikmdpkh54s9vh2hf8.apps.googleusercontent.com',
-    offlineAccess: true, // Add this if you need offline access
-    // Remove client_type: 3 as it's not a valid parameter
+    webClientId: '1056489445891-p69mdlhgngprardikmdpkh54s9vh2hf8.apps.googleusercontent.com', // Web client for Firebase Auth
+    offlineAccess: true,
+    forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
 });
 
 type AuthContextType = {
-    user: FirebaseAuthTypes.User | null;
+    user: User | null;
     loading: boolean;
     googleSignIn: () => Promise<void>;
     signOut: () => Promise<void>;
@@ -19,40 +20,57 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Handle auth state changes
-        const subscriber = auth().onAuthStateChanged((user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
             if (loading) setLoading(false);
         });
 
         // Unsubscribe on unmount
-        return subscriber;
+        return unsubscribe;
     }, [loading]);
 
     // Google Sign In function
     const googleSignIn = async (): Promise<void> => {
         try {
+            console.log('🔍 Starting Google Sign In process...');
+
             // Check if your device supports Google Play
+            console.log('🔍 Checking Play Services...');
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+            console.log('✅ Play Services available');
 
-            // Get the user ID token - correct access pattern
+            // Get the user ID token
+            console.log('🔍 Attempting Google Sign In...');
             const userInfo = await GoogleSignin.signIn();
+            console.log('✅ Google Sign In successful, user info:', userInfo);
 
-            // According to the latest structure, we need to access the token correctly
-            // Based on the search results, it might be structured differently
-            const idToken = userInfo.data?.idToken ;
+            const idToken = userInfo.data?.idToken;
+            console.log('🔍 ID Token received:', idToken ? '✅ Present' : '❌ Missing');
+
+            if (!idToken) {
+                throw new Error('No ID token received from Google Sign In');
+            }
 
             // Create a Google credential with the token
-            const googleCredential = auth.GoogleAuthProvider.credential(idToken ?? null);
+            console.log('🔍 Creating Firebase credential...');
+            const googleCredential = GoogleAuthProvider.credential(idToken);
 
             // Sign-in the user with the credential
-            await auth().signInWithCredential(googleCredential);
+            console.log('🔍 Signing in to Firebase...');
+            await signInWithCredential(auth, googleCredential);
+            console.log('✅ Firebase sign in successful');
         } catch (error) {
-            console.error('Google Sign In Error:', error);
+            console.error('❌ Google Sign In Error:', error);
+            console.error('Error details:', {
+                code: (error as any)?.code,
+                message: (error as any)?.message,
+                userInfo: (error as any)?.userInfo,
+            });
             throw error;
         }
     };
@@ -62,20 +80,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             await GoogleSignin.revokeAccess();
             await GoogleSignin.signOut();
-            await auth().signOut();
+            await firebaseSignOut(auth);
         } catch (error) {
             console.error('Sign Out Error:', error);
             throw error;
         }
     };
 
-    // Memoize the context value to prevent unnecessary re-renders
-    const contextValue = useMemo(() => ({
+    // Context value
+    const contextValue = {
         user,
         loading,
         googleSignIn,
         signOut
-    }), [user, loading]);
+    };
 
     return (
         <AuthContext.Provider value={contextValue}>

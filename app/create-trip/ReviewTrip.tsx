@@ -30,7 +30,7 @@ const ReviewTrip = () => {
                           Destination
                       </Text>
                       <Text style={styles.text}>
-                          {tripData.locationInfo.name}
+                          {tripData?.locationInfo?.name || 'No destination selected'}
                       </Text>
                   </View>
               </View>
@@ -43,9 +43,12 @@ const ReviewTrip = () => {
                       Travel Date
                   </Text>
                   <Text style={styles.text}>
-                      {moment(tripData.startDate).format('DD MMM') + " To " + moment(tripData.endDate).format('DD MMM YYYY')}
+                      {tripData?.startDate && tripData?.endDate
+                        ? moment(tripData.startDate).format('DD MMM') + " To " + moment(tripData.endDate).format('DD MMM YYYY')
+                        : 'No dates selected'
+                      }
                   </Text>
-                  <Text style={styles.text}>{tripData.totalDays} Days</Text>
+                  <Text style={styles.text}>{tripData?.totalDays || 0} Days</Text>
               </View>
           </View>
               {/* Travelers Info */}
@@ -56,7 +59,7 @@ const ReviewTrip = () => {
                           Who is Traveling?
                       </Text>
                       <Text style={styles.text}>
-                      {tripData.travelerCount.title}
+                      {tripData?.travelerCount?.title || 'Not selected'}
                       </Text>
                   </View>
           </View>     
@@ -68,7 +71,7 @@ const ReviewTrip = () => {
                       Budget
                   </Text>
                   <Text style={styles.text}>
-                      {tripData.budget}
+                      {tripData?.budget || 'Not selected'}
                   </Text>
               </View>
           </View>
