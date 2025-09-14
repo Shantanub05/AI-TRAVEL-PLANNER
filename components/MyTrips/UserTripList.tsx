@@ -10,7 +10,7 @@ const UserTripList = ({ userTrips }: any) => {
     const router = useRouter()
 
     return (
-        <ScrollView style={styles.innerContainer}>
+        <ScrollView style={styles.innerContainer} scrollEnabled={false}>
             {LatestTrip.locationInfo.photoRef
                 ? (
                     (() => {

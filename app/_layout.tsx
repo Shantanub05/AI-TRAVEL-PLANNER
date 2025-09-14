@@ -3,7 +3,8 @@ import { useFonts } from 'expo-font';
 import { AuthProvider } from "@/configs/AuthContext";
 import 'react-native-get-random-values';
 import { CreateTripContext } from "@/context/CreateTripContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { LogBox } from 'react-native';
 
 
 const RootLayout = () => {
@@ -12,6 +13,10 @@ const RootLayout = () => {
     'outfit-medium': require('./../assets/fonts/Outfit-Medium.ttf'),
     'outfit-bold': require('./../assets/fonts/Outfit-Bold.ttf'),
   })
+
+  useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+  }, []);
 
   const [tripData, setTripData] = useState<any>([])
   return (

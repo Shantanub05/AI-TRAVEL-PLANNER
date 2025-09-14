@@ -2,7 +2,7 @@ import { Colors } from '@/constants/Colors'
 import { useNavigation, useRouter } from 'expo-router'
 import { useContext, useEffect } from 'react'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native'
 import { CreateTripContext } from '@/context/CreateTripContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -43,6 +43,7 @@ const SearchPlace = () => {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('🎬 SearchPlace component mounted');
     navigation.setOptions({
       headerTitle: 'Search',
       headerTransparent: true,
@@ -67,36 +68,96 @@ const SearchPlace = () => {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-
-      
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
         <GooglePlacesAutocomplete
-        placeholder='Search Places'
-        styles={{
-          textInputContainer: {
-            borderWidth: 1,
-            borderRadius: 5,
-            marginTop: 25,
-          }
-        }}
+          placeholder='Search Places'
           fetchDetails={true}
           onPress={(data, details = null) => {
+            console.log('🔍 Search result clicked:', data.description);
+            console.log('📍 Details received:', details ? 'Yes' : 'No');
+            console.log('🗂️ Full details:', details);
+
             setTripData({
               locationInfo: {
                 name: data.description,
                 coordinates: details?.geometry.location,
                 photoRef: (details as any)?.photos?.[0]?.photo_reference,
                 url: details?.url
-
-
               }
             })
+
+            console.log('🚀 Navigating to SelectTraveler...');
             router.push('/create-trip/SelectTraveler')
-            // console.log(data, details);
           }}
           query={{
             key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
             language: 'en',
+          }}
+          styles={{
+            textInputContainer: {
+              borderWidth: 1,
+              borderRadius: 5,
+              marginTop: 25,
+              backgroundColor: 'white'
+            },
+            textInput: {
+              height: 44,
+              fontSize: 16,
+              backgroundColor: 'white'
+            },
+            predefinedPlacesDescription: {
+              color: '#1faadb',
+            },
+            listView: {
+              backgroundColor: 'white',
+              borderWidth: 1,
+              borderColor: '#ddd',
+              borderRadius: 5,
+              marginTop: 5,
+            },
+            row: {
+              backgroundColor: 'white',
+              padding: 13,
+              minHeight: 44,
+            },
+            separator: {
+              height: 0.5,
+              backgroundColor: '#ddd',
+            },
+            description: {
+              fontSize: 15,
+              color: '#333',
+            },
+            poweredContainer: {
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              borderBottomRightRadius: 5,
+              borderBottomLeftRadius: 5,
+              borderColor: '#c8c7cc',
+              borderTopWidth: 0.5,
+            },
+          }}
+          enablePoweredByContainer={false}
+          debounce={200}
+          minLength={2}
+          returnKeyType={'search'}
+          keyboardShouldPersistTaps='handled'
+          listViewDisplayed='auto'
+          textInputProps={{
+            onFocus: () => console.log('🎯 Search input focused'),
+            onBlur: () => console.log('🎯 Search input blurred'),
+          }}
+          onFail={(error) => {
+            console.error('❌ GooglePlacesAutocomplete error:', error);
+          }}
+          onNotFound={() => {
+            console.log('🔍 No results found');
+          }}
+          onTimeout={() => {
+            console.log('⏰ Search request timed out');
           }}
         />
 
@@ -135,7 +196,7 @@ const SearchPlace = () => {
           </ScrollView>
         </View>
 
-      </ScrollView>
+      </KeyboardAvoidingView>
 
   )
 }

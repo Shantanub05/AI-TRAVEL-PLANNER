@@ -35,7 +35,7 @@ const TripDetails = () => {
     }, []);
 
     return (
-        <ScrollView style={styles.mainContainer}>
+        <ScrollView style={styles.mainContainer} nestedScrollEnabled={false}>
             {tripObj?.tripData?.locationInfo?.photoRef ? (
                 (() => {
                     const photoUrl =

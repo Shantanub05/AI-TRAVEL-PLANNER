@@ -30,12 +30,12 @@ const SelectDates = () => {
     };
 
     const onDateSelect = () => {
-        if (!startDate && !endDate) {
+        if (!startDate || !endDate) {
             ToastAndroid.show('Please select start and end date', ToastAndroid.BOTTOM)
             return
         }
-        const totalDays = startDate && endDate ? endDate.diff(startDate, 'days') : 0
-        setTripData({ ...tripData, startDate: startDate?.format('YYYY-MM-DD'), endDate: endDate?.format('YYYY-MM-DD'), totalDays: totalDays + 1 })
+        const totalDays = endDate.diff(startDate, 'days')
+        setTripData({ ...tripData, startDate: startDate.format('YYYY-MM-DD'), endDate: endDate.format('YYYY-MM-DD'), totalDays: totalDays + 1 })
         router.push('/create-trip/SelectBudget')
     }
 
