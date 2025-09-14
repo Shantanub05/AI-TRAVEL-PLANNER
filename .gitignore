@@ -34,8 +34,8 @@ yarn-error.*
 .env.*
 !.env.example
 
-# Firebase configuration (SECURITY)
-google-services.json
+# Firebase configuration (SECURITY - commented out for EAS build)
+# google-services.json
 GoogleService-Info.plist
 
 # local env files
